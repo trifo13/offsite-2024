@@ -1,3 +1,4 @@
+# Create AWS User and Policy:
 resource "aws_iam_user" "secrets_engine" {
   name = "${var.project_name}-user"
 }
@@ -62,7 +63,7 @@ EOF
 }
 
 #
-### Resources from the previous task:
+### Re-declare resources from the previous project:
 #
 
 # Create HCP HVN:
