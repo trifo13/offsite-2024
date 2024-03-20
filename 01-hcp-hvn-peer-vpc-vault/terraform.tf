@@ -7,6 +7,7 @@ terraform {
     }
   }
 }
+
 provider "hcp" {}
 
 provider "aws" {
