@@ -1,5 +1,5 @@
-output "hcp-b-url" {
-  description = "HCP Boundary public URL:"
+output "BOUNDARY_ADDR" {
+  description = "HCP Boundary public URL: to be used as variable in TFC Workspace:"
   value       = hcp_boundary_cluster.offsite-2024.cluster_url
 }
 
