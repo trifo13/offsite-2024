@@ -38,7 +38,7 @@ data "aws_ami" "ubuntu" {
 }
 resource "aws_subnet" "hvn_vpc" {
   vpc_id     = hcp_aws_network_peering.peer.peer_vpc_id
-  cidr_block = "172.31.0.0/16"
+  cidr_block = "172.31.0.0/20"
 
   availability_zone = "us-west-2c"
 }
