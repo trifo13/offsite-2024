@@ -49,9 +49,9 @@ resource "aws_instance" "main" {
   subnet_id     = aws_subnet.hvn_vpc.id
 
   tags = {
-    Name  = "${var.project_name}-instance"
+    Name  = "Super-secret-EC2-instance"
     TTL   = var.ttl
-    Owner = "${var.project_name}-guide"
+    Owner = "${var.project_name}-operator"
   }
 }
 
