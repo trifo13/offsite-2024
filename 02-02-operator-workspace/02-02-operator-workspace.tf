@@ -43,11 +43,30 @@ resource "aws_subnet" "hvn_vpc" {
   availability_zone = "us-west-2c"
 }
 
+# RSA key of size 4096 bits
+resource "tls_private_key" "rsa_4096_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "ec2_key" {
+  key_name   = "ec2-key"
+  public_key = trim("${tls_private_key.rsa_4096_key.public_key_openssh}", "\n")
+
+
+  provisioner "local-exec" {
+    command = <<-EOT
+    echo '${tls_private_key.rsa_4096_key.private_key_pem}' > ec2-key.pem
+      chmod 400 ec2-key.pem
+    EOT
+  }
+}
+
 resource "aws_instance" "main" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.hvn_vpc.id
-
+  key_name      = aws_key_pair.ec2_key.key_name
   tags = {
     Name  = "Super-secret-EC2-instance"
     TTL   = var.ttl

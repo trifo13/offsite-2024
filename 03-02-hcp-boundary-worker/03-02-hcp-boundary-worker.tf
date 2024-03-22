@@ -100,10 +100,10 @@ resource "aws_instance" "boundary_pki_worker" {
   instance_type               = "t2.micro"
   user_data_replace_on_change = true
   user_data_base64            = data.cloudinit_config.boundary_pki_worker.rendered
-  key_name                    = "my-pub-key"
   subnet_id                   = aws_subnet.hvn_vpc.id
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.pki-worker-sg.id]
+  key_name      = aws_key_pair.ec2_key.key_name
   tags = {
     Name = "Boundary PKI Worker"
   }
@@ -125,11 +125,6 @@ data "aws_ami" "pki-worker-ubuntu" {
   }
 
   owners = ["099720109477"] # Canonical
-}
-
-resource "aws_key_pair" "my-pub-key" {
-  key_name   = "my-pub-key"
-  public_key = "ssh-rsa ..."
 }
 
 resource "aws_security_group" "pki-worker-sg" {
@@ -231,11 +226,24 @@ resource "aws_subnet" "hvn_vpc" {
   availability_zone = "us-west-2c"
 }
 
+resource "aws_key_pair" "ec2_key" {
+  key_name   = "ec2-key"
+  public_key = trim("${tls_private_key.rsa_4096_key.public_key_openssh}", "\n")
+
+
+  provisioner "local-exec" {
+    command = <<-EOT
+    echo '${tls_private_key.rsa_4096_key.private_key_pem}' > ec2-key.pem
+      chmod 400 ec2-key.pem
+    EOT
+  }
+}
+
 resource "aws_instance" "main" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.hvn_vpc.id
-
+  key_name      = aws_key_pair.ec2_key.key_name
   tags = {
     Name  = "Super-secret-EC2-instance"
     TTL   = var.ttl
