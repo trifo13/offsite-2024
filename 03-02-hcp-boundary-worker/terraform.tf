@@ -1,9 +1,9 @@
 terraform {
   cloud {
-    organization = "Change-to-your-own-TFC-Org"
+    organization = "IMPORTANT: Change-to-your-own-TFC-Org"
 
     workspaces {
-      name = "Change-to-your-own-TFC-Org-Workspace"
+      name = "GSS-Offsite-India-2024"
     }
   }
 }
