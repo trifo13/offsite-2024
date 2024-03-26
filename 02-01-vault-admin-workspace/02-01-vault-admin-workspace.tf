@@ -66,6 +66,14 @@ EOF
 ### Re-declare resources from the previous project:
 #
 
+resource "hcp_vault_cluster" "offsite-2024" {
+  hvn_id          = hcp_hvn.offsite-2024.hvn_id
+  cluster_id      = var.cluster_id
+  tier            = var.hcp-vault_tier
+  public_endpoint = true
+  depends_on      = [aws_internet_gateway.hvn-gw]
+}
+
 # Create HCP HVN:
 resource "hcp_hvn" "offsite-2024" {
   hvn_id         = var.hvn_id
@@ -102,10 +110,28 @@ resource "aws_vpc_peering_connection_accepter" "peer" {
   auto_accept               = true
 }
 
-# Create HCP Vault cluster:
-resource "hcp_vault_cluster" "offsite-2024" {
-  hvn_id          = hcp_hvn.offsite-2024.hvn_id
-  cluster_id      = var.cluster_id
-  tier            = var.hcp-vault_tier
-  public_endpoint = true
+# Create AWS Internet gateway:
+resource "aws_internet_gateway" "hvn-gw" {
+  vpc_id = aws_vpc.peer.id
+}
+
+resource "aws_route_table" "hvn_second_rt" {
+  vpc_id = aws_vpc.peer.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.hvn-gw.id
+  }
+}
+
+resource "aws_subnet" "public_subnets" {
+  count      = length(var.subnet_cidrs)
+  vpc_id     = aws_vpc.peer.id
+  cidr_block = element(var.subnet_cidrs, count.index)
+}
+
+resource "aws_route_table_association" "subnet_asso" {
+  count          = length(var.subnet_cidrs)
+  subnet_id      = element(aws_subnet.public_subnets[*].id, count.index)
+  route_table_id = aws_route_table.hvn_second_rt.id
 }
