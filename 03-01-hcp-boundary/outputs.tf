@@ -13,7 +13,3 @@ output "hcp-b-p" {
   value       = hcp_boundary_cluster.offsite-2024.password
   sensitive   = true
 }
-
-#
-###
-#
