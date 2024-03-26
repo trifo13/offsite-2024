@@ -81,3 +81,9 @@ variable "route_id" {
   type        = string
   default     = "route-offsite-2024"
 }
+
+variable "subnet_cidrs" {
+  type        = list(string)
+  description = "Public Subnet CIDR values"
+  default     = ["172.31.0.0/20", "172.31.16.0/20", "172.31.32.0/20", "172.31.64.0/20"]
+}

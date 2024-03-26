@@ -1,3 +1,38 @@
+# Add the private EC2 instance as a target.
+resource "boundary_target" "super-secret-ec2-instance" {
+  type                     = "tcp"
+  name                     = "super-secret-ec2-instance"
+  description              = "Super-secret-EC2-instance"
+  address                  = aws_instance.main.private_ip
+  ingress_worker_filter    = " \"pki-worker\" in \"/tags/type\" "
+  scope_id                 = boundary_scope.project.id
+  session_connection_limit = -1
+  default_port             = 22
+}
+
+# Create an organisation scope within global, named "ops-org"
+# The global scope can contain multiple org scopes
+resource "boundary_scope" "org" {
+  scope_id                 = "global"
+  name                     = "ops-org"
+  description              = "Support Ops Team"
+  auto_create_default_role = true
+  auto_create_admin_role   = true
+}
+
+/* Create a project scope within the "ops-org" organsiation
+Each org can contain multiple projects and projects are used to hold
+infrastructure-related resources
+*/
+resource "boundary_scope" "project" {
+  name                     = "Ops_Production"
+  description              = "Manage Prod Resources"
+  scope_id                 = boundary_scope.org.id
+  auto_create_admin_role   = true
+  auto_create_default_role = true
+}
+
+
 # Create and configure the PKI Worker in HCP Boundary:
 resource "boundary_worker" "pki_worker" {
   scope_id                    = "global"
