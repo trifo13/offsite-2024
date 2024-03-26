@@ -36,28 +36,22 @@ data "aws_ami" "ubuntu" {
 
   owners = ["099720109477"] # Canonical
 }
-resource "aws_subnet" "hvn_vpc" {
-  vpc_id     = hcp_aws_network_peering.peer.peer_vpc_id
-  cidr_block = "172.31.0.0/20"
 
-  availability_zone = "us-west-2c"
-}
 
 # RSA key of size 4096 bits
-resource "tls_private_key" "rsa_4096_key" {
+resource "tls_private_key" "private-ec2_rsa_4096_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "aws_key_pair" "ec2_key" {
-  key_name   = "ec2-key"
-  public_key = trim("${tls_private_key.rsa_4096_key.public_key_openssh}", "\n")
-
+resource "aws_key_pair" "private-ec2_key" {
+  key_name   = "private-ec2-key"
+  public_key = trim("${tls_private_key.private-ec2_rsa_4096_key.public_key_openssh}", "\n")
 
   provisioner "local-exec" {
     command = <<-EOT
-    echo '${tls_private_key.rsa_4096_key.private_key_pem}' > ec2-key.pem
-      chmod 400 ec2-key.pem
+    echo '${tls_private_key.private-ec2_rsa_4096_key.private_key_pem}' > private-ec2-key.pem
+      chmod 400 private-ec2-key.pem
     EOT
   }
 }
@@ -65,8 +59,8 @@ resource "aws_key_pair" "ec2_key" {
 resource "aws_instance" "main" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
-  subnet_id     = aws_subnet.hvn_vpc.id
-  key_name      = aws_key_pair.ec2_key.key_name
+  subnet_id     = aws_subnet.public_subnets[0].id
+  key_name      = aws_key_pair.private-ec2_key.key_name
   tags = {
     Name  = "Super-secret-EC2-instance"
     TTL   = var.ttl
