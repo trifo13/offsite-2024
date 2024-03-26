@@ -42,12 +42,6 @@ variable "cloud_provider" {
   default     = "aws"
 }
 
-variable "hcp-vault_tier" {
-  description = "HCP Vault cluster tier."
-  type        = string
-  default     = "dev"
-}
-
 variable "peering_id" {
   description = "HCP peering connection ID."
   type        = string
