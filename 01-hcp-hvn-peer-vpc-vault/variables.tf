@@ -10,6 +10,12 @@ variable "cluster_id" {
   default     = "hcp-v-offsite-2024"
 }
 
+variable "hcp-vault_tier" {
+  description = "HCP Vault cluster tier."
+  type        = string
+  default     = "dev"
+}
+
 variable "peering_id" {
   description = "HCP peering connection ID."
   type        = string
@@ -34,8 +40,8 @@ variable "cloud_provider" {
   default     = "aws"
 }
 
-variable "hcp-vault_tier" {
-  description = "HCP Vault cluster tier."
-  type        = string
-  default     = "dev"
+variable "subnet_cidrs" {
+ type        = list(string)
+ description = "Public Subnet CIDR values"
+ default     = ["172.31.0.0/20", "172.31.16.0/20", "172.31.32.0/20", "172.31.64.0/20"]
 }
