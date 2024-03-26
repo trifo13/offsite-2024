@@ -24,6 +24,12 @@ variable "cluster_id" {
   default     = "hcp-v-offsite-2024"
 }
 
+variable "hcp-vault_tier" {
+  description = "HCP Vault cluster tier."
+  type        = string
+  default     = "dev"
+}
+
 variable "hvn_id" {
   description = "HCP HVN ID."
   type        = string
@@ -52,4 +58,10 @@ variable "route_id" {
   description = "HCP HVN route ID."
   type        = string
   default     = "route-offsite-2024"
+}
+
+variable "subnet_cidrs" {
+  type        = list(string)
+  description = "Public Subnet CIDR values"
+  default     = ["172.31.0.0/20", "172.31.16.0/20", "172.31.32.0/20", "172.31.64.0/20"]
 }
