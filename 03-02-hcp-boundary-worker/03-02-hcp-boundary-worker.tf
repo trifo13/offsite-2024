@@ -150,7 +150,7 @@ resource "aws_key_pair" "public-ec2_key" {
 
 resource "aws_instance" "boundary_pki_worker" {
   ami                         = data.aws_ami.ubuntu.id
-  instance_type               = "t2.micro"
+  instance_type               = "t3.micro"
   user_data_replace_on_change = true
   user_data_base64            = data.cloudinit_config.boundary_pki_worker.rendered
   subnet_id     = aws_subnet.public_subnets[0].id
@@ -298,7 +298,7 @@ resource "aws_key_pair" "private-ec2_key" {
 
 resource "aws_instance" "main" {
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
+  instance_type = "t3.micro"
   subnet_id     = aws_subnet.public_subnets[0].id
   key_name      = aws_key_pair.private-ec2_key.key_name
   tags = {
