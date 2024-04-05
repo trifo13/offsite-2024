@@ -23,9 +23,3 @@ output "secret_private_ec2_ip" {
   description = "The Private IPv4 address of the EC2 target provision by the Operator:"
   value       = aws_instance.main.private_ip
 }
-
-output "public-ec2_key" {
-  description = "PEM:"
-  value       = tls_private_key.public-ec2_rsa_4096_key.private_key_pem
-  sensitive   = true
-}
