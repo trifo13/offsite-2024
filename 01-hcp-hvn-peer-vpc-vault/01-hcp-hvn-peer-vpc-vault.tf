@@ -1,3 +1,10 @@
+# Create HCP HVN:
+resource "hcp_hvn" "offsite-2024" {
+  hvn_id         = var.hvn_id
+  cloud_provider = var.cloud_provider
+  region         = var.region
+}
+
 # Create HCP Vault cluster:
 resource "hcp_vault_cluster" "offsite-2024" {
   hvn_id          = hcp_hvn.offsite-2024.hvn_id
@@ -5,13 +12,6 @@ resource "hcp_vault_cluster" "offsite-2024" {
   tier            = var.hcp-vault_tier
   public_endpoint = true
   depends_on      = [aws_internet_gateway.hvn-gw]
-}
-
-# Create HCP HVN:
-resource "hcp_hvn" "offsite-2024" {
-  hvn_id         = var.hvn_id
-  cloud_provider = var.cloud_provider
-  region         = var.region
 }
 
 # Create AWS VPC:
