@@ -130,33 +130,15 @@ data "cloudinit_config" "boundary_pki_worker" {
   }
 }
 
-# RSA key of size 4096 bits
-resource "tls_private_key" "public-ec2_rsa_4096_key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
-resource "aws_key_pair" "public-ec2_key" {
-  key_name   = "public-ec2_key"
-  public_key = trim("${tls_private_key.public-ec2_rsa_4096_key.public_key_openssh}", "\n")
-
-  provisioner "local-exec" {
-    command = <<-EOT
-    echo '${tls_private_key.public-ec2_rsa_4096_key.private_key_pem}' > public-ec2_key.pem
-      chmod 400 public-ec2_key.pem
-    EOT
-  }
-}
-
 resource "aws_instance" "boundary_pki_worker" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t3.micro"
   user_data_replace_on_change = true
   user_data_base64            = data.cloudinit_config.boundary_pki_worker.rendered
-  subnet_id     = aws_subnet.public_subnets[0].id
+  subnet_id                   = aws_subnet.public_subnets[0].id
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.pki-worker-sg.id]
-  key_name      = aws_key_pair.public-ec2_key.key_name
+  key_name                    = aws_key_pair.private-ec2_key.key_name
   tags = {
     Name = "Boundary PKI Worker"
   }
@@ -296,11 +278,25 @@ resource "aws_key_pair" "private-ec2_key" {
   }
 }
 
+resource "aws_security_group" "super-secret-sg" {
+  name   = "super-secret-sg"
+  vpc_id = hcp_aws_network_peering.peer.peer_vpc_id
+
+  # Inbound rules:
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_instance" "main" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.micro"
-  subnet_id     = aws_subnet.public_subnets[0].id
-  key_name      = aws_key_pair.private-ec2_key.key_name
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t3.micro"
+  subnet_id              = aws_subnet.public_subnets[0].id
+  key_name               = aws_key_pair.private-ec2_key.key_name
+  vpc_security_group_ids = [aws_security_group.super-secret-sg.id]
   tags = {
     Name  = "Super-secret-EC2-instance"
     TTL   = var.ttl

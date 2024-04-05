@@ -69,21 +69,31 @@ resource "aws_key_pair" "private-ec2_key" {
   }
 }
 
+resource "aws_security_group" "super-secret-sg" {
+  name   = "super-secret-sg"
+  vpc_id = hcp_aws_network_peering.peer.peer_vpc_id
+
+  # Inbound rules:
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_instance" "main" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.micro"
-  subnet_id     = aws_subnet.public_subnets[0].id
-  key_name      = aws_key_pair.private-ec2_key.key_name
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t3.micro"
+  subnet_id              = aws_subnet.public_subnets[0].id
+  key_name               = aws_key_pair.private-ec2_key.key_name
+  vpc_security_group_ids = [aws_security_group.super-secret-sg.id]
   tags = {
     Name  = "Super-secret-EC2-instance"
     TTL   = var.ttl
     Owner = "${var.project_name}-operator"
   }
 }
-
-#
-### Re-declare resources from the previous project:
-#
 
 resource "aws_iam_user_policy" "secrets_engine" {
   user = aws_iam_user.secrets_engine.name
